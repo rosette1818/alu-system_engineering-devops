@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Configures Nginx on a new Ubuntu server with a custom X-Served-By header
+
+apt-get update
+apt-get -y install nginx
+echo "Holberton School" > /var/www/html/index.nginx-debian.html
+echo "Ceci n'est pas une page" > /var/www/html/404.html
+
+printf "%s" "server {
+	listen 80 default_server;
+	listen [::]:80 default_server;
+
+	root /var/www/html;
+	index index.html index.htm index.nginx-debian.html;
+
+	server_name _;
+	add_header X-Served-By \$hostname;
+
+	location / {
+		try_files \$uri \$uri/ =404;
+	}
+
+	rewrite ^/redirect_me https://www.youtube.com/watch?v=QH2-TGUlwu4 permanent;
+
+	error_page 404 /404.html;
+	location = /404.html {
+		internal;
+	}
+}
+" > /etc/nginx/sites-available/default
+
+service nginx restart
