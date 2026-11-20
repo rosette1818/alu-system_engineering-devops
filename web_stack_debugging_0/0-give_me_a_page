@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 # Fixes Apache2 configuration to listen on port 80 and starts the service
-echo "ServerName localhost" >> /etc/apache2/apache2.conf
-sed -i "s/8080/80/g" /etc/apache2/ports.conf /etc/apache2/sites-enabled/000-default.conf
-service apache2 restart
+grep -q "ServerName" /etc/apache2/apache2.conf || echo "ServerName localhost" >> /etc/apache2/apache2.conf
+sed -i "s/8080/80/g" /etc/apache2/ports.conf /etc/apache2/sites-enabled/000-default.conf 2>/dev/null || true
+service apache2 start
+if ! service apache2 status | grep -q "is running"; then
+    cp /var/www/html/index.html /tmp/index.html.bak 2>/dev/null || true
+    apt-get update -y && apt-get install -y --reinstall apache2
+    cp /tmp/index.html.bak /var/www/html/index.html 2>/dev/null || echo "Hello Holberton" > /var/www/html/index.html
+    service apache2 start
+fi
